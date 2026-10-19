@@ -10,7 +10,7 @@ from PIL import Image
 from nanovllm_omni.outputs import OmniOutput
 from nanovllm_omni.sampling_params import OmniSamplingParams
 
-
+# 运行时状态信息
 @dataclass(slots=True)
 class RunnerState:
     req_id: str
@@ -45,8 +45,8 @@ class RunnerState:
 
 @dataclass(slots=True)
 class RunnerOutput:
-    req_id: str
-    step_index: int | None = None
-    finished: bool = False
-    result: OmniOutput | None = None
-    error: str | None = None
+    req_id: str # 请求ID值
+    step_index: int | None = None # 请求位置
+    finished: bool = False # 是否完成
+    result: OmniOutput | None = None # 输出结果
+    error: str | None = None # 报错信息

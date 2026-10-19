@@ -18,6 +18,9 @@ class OmniLLM:
 
     @staticmethod
     def preset(name: str) -> OmniSamplingParams:
+        """
+        获取采样参数,包装在OmniSamplingParams中返回
+        """
         if name not in PRESETS:
             raise ValueError(f"Unknown preset: {name}")
         return clone_sampling_params(PRESETS[name])
@@ -29,11 +32,17 @@ class OmniLLM:
         negative_prompt: str | None = None,
         sampling_params: OmniSamplingParams | None = None,
     ) -> OmniOutput:
-        sampling_params = clone_sampling_params(PRESETS["quality"]) if sampling_params is None else sampling_params
+        """
+        
+        """
+        sampling_params = clone_sampling_params(PRESETS["quality"]) if sampling_params is None else sampling_params # 使用默认采样参数
         if negative_prompt is not None:
             sampling_params.negative_prompt = negative_prompt
-        request = OmniRequest(prompt=prompt, image=image, sampling_params=sampling_params)
-        outputs = self.engine.generate(request)
+
+        request = OmniRequest(prompt=prompt, image=image, sampling_params=sampling_params) # 封装需求
+
+        outputs = self.engine.generate(request) # 调用引擎生成
+        
         if not outputs:
             raise RuntimeError("Generation finished without output. Check runner or scheduler logs for the failing step.")
         return outputs[0]

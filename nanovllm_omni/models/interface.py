@@ -7,7 +7,7 @@ import torch
 from nanovllm_omni.outputs import OmniOutput
 from nanovllm_omni.worker.utils import RunnerState
 
-
+# 被继承的子类在pipline需要有下面四种方法/能力，至少是有一个名称，不一定立马实现
 @runtime_checkable
 class SupportsStepExecution(Protocol):
     """Minimal state-driven step execution contract for nano diffusion pipelines."""

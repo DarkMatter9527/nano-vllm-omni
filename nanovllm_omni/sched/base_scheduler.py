@@ -16,7 +16,7 @@ from nanovllm_omni.sched.interface import (
 class BaseScheduler(SchedulerInterface):
 
     def __init__(self, max_num_running_reqs: int = 1):
-        self._request_states: dict[str, DiffusionRequestState] = {}
+        self._request_states: dict[str, DiffusionRequestState] = {} # req 状态记录(schedual中的ID值，)
         self._request_id_to_sched_req_id: dict[str, str] = {}
         self._step_id = 0
         self._waiting: deque[str] = deque()
@@ -33,23 +33,29 @@ class BaseScheduler(SchedulerInterface):
         return sched_req_id
 
     def schedule(self) -> DiffusionSchedulerOutput:
-        scheduled_new_reqs: list[NewRequestData] = []
-        scheduled_cached_req_ids: list[str] = []
+        scheduled_new_reqs: list[NewRequestData] = [] # 新添加的请求
+        scheduled_cached_req_ids: list[str] = [] # 当前正在运行的请求
 
+        # 获取正在运行的request的id值
         for sched_req_id in self._running:
-            state = self._request_states.get(sched_req_id)
+            state = self._request_states.get(sched_req_id) 
             if state is not None:
                 scheduled_cached_req_ids.append(sched_req_id)
 
-        while self._waiting and len(self._running) < self.max_num_running_reqs:
+        while self._waiting and len(self._running) < self.max_num_running_reqs: # 如有还有在等待的请求且没有达到允许的最大运行请求数
             sched_req_id = self._waiting[0]
             state = self._request_states.get(sched_req_id)
+
+            # 找不到请求则直接返回
             if state is None:
                 self._waiting.popleft()
                 continue
             self._waiting.popleft()
+
+            # 改变运行状态
             was_new = state.status == DiffusionRequestStatus.WAITING
             state.status = DiffusionRequestStatus.RUNNING
+
             self._running.append(sched_req_id)
             if was_new:
                 scheduled_new_reqs.append(NewRequestData.from_state(state))
@@ -65,10 +71,11 @@ class BaseScheduler(SchedulerInterface):
             num_waiting_reqs=len(self._waiting),
         )
         self._step_id += 1
-        self._finished_req_ids.clear()
+        self._finished_req_ids.clear() # 已经完成请求清除
         return out
 
     def has_requests(self) -> bool:
+        # 等待或运行队列中仍然有请求
         return bool(self._waiting or self._running)
 
     def get_request_state(self, sched_req_id: str) -> DiffusionRequestState | None:

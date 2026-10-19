@@ -34,7 +34,7 @@ class DiffusionRequestState:
 
 @dataclass(slots=True)
 class NewRequestData:
-    sched_req_id: str
+    sched_req_id: str # 全局唯一ID字符串
     req: OmniRequest
 
     @classmethod
@@ -54,8 +54,8 @@ class CachedRequestData:
 @dataclass(slots=True)
 class DiffusionSchedulerOutput:
     step_id: int
-    scheduled_new_reqs: list[NewRequestData]
-    scheduled_cached_reqs: CachedRequestData
+    scheduled_new_reqs: list[NewRequestData] # 有ID值和请求输入信息(prompt、image)
+    scheduled_cached_reqs: CachedRequestData # 请求队列只有ID
     finished_req_ids: set[str]
     num_running_reqs: int
     num_waiting_reqs: int
@@ -73,16 +73,16 @@ class DiffusionSchedulerOutput:
 
     @property
     def num_scheduled_reqs(self) -> int:
-        return len(self.scheduled_req_ids)
+        return len(self.scheduled_req_ids) # 包括新增运行请求和原有运行请求
 
-
+# vllm功能最底层的类
 class SchedulerInterface(ABC):
 
     def _make_sched_req_id(self, request: OmniRequest) -> str:
         base = request.request_id or f"req_{uuid.uuid4().hex[:8]}"
         sched_req_id = base
         suffix = 1
-        while self.get_request_state(sched_req_id) is not None:
+        while self.get_request_state(sched_req_id) is not None: # 有重复的序号
             sched_req_id = f"{base}#{suffix}"
             suffix += 1
         return sched_req_id

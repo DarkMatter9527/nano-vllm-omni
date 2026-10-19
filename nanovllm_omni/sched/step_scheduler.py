@@ -7,8 +7,9 @@ from nanovllm_omni.sched.base_scheduler import BaseScheduler
 from nanovllm_omni.sched.interface import DiffusionRequestState, DiffusionRequestStatus, DiffusionSchedulerOutput
 
 
+# 记录步骤
 @dataclass(slots=True)
-class _StepProgress:
+class _StepProgress: 
     current_step: int
     total_steps: int
 
@@ -17,20 +18,26 @@ class StepScheduler(BaseScheduler):
 
     def __init__(self, max_num_running_reqs: int = 1):
         super().__init__(max_num_running_reqs=max_num_running_reqs)
-        self._request_progress: dict[str, _StepProgress] = {}
+        self._request_progress: dict[str, _StepProgress] = {} # req 处理进度记录(sche状态和schestate)
 
     def add_request(self, request: OmniRequest) -> str:
-        sched_req_id = self._make_sched_req_id(request)
-        total_steps = int(request.sampling_params.num_inference_steps)
+        sched_req_id = self._make_sched_req_id(request) # 取出request ID值
+
+        total_steps = int(request.sampling_params.num_inference_steps) # 获取推理步骤
         if total_steps <= 0:
             raise ValueError(f"Request {sched_req_id} must have positive num_inference_steps, got {total_steps}")
+
         self._request_states[sched_req_id] = DiffusionRequestState(
             sched_req_id=sched_req_id,
             req=request,
         )
-        self._request_id_to_sched_req_id[request.request_id] = sched_req_id
+
+        self._request_id_to_sched_req_id[request.request_id] = sched_req_id # 建立请求ID到请求队列序号之间的映射
+        
         self._waiting.append(sched_req_id)
+        
         self._request_progress[sched_req_id] = _StepProgress(current_step=0, total_steps=total_steps)
+
         return sched_req_id
 
     def update_from_output(self, sched_output: DiffusionSchedulerOutput, output) -> set[str]:

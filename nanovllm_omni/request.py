@@ -13,10 +13,14 @@ class OmniRequest:
     prompt: str = DEFAULT_PROMPT
     image: str | Path | Image.Image = DEFAULT_IMAGE
     sampling_params: OmniSamplingParams = field(default_factory=lambda: clone_sampling_params(PRESETS["quality"]))
-    request_id: str = field(default_factory=lambda: uuid4().hex)
+    # uuid()生成全局唯一ID,“.hex”拿到字符串形式ID值
+    request_id: str = field(default_factory=lambda: uuid4().hex) # 包装输入请求的时候得到ID值
 
     @property
     def batch_key(self) -> tuple:
+        """
+        取出采样参数并以元组形式返回
+        """
         sp = self.sampling_params
         return (
             sp.height,
@@ -31,5 +35,8 @@ class OmniRequest:
 
     @property
     def prompt_cache_key(self) -> tuple:
+        """
+        返回提示词
+        """
         sp = self.sampling_params
         return (self.prompt, sp.negative_prompt)

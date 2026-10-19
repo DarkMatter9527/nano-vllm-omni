@@ -17,18 +17,18 @@ def parse_args():
     parser.add_argument("--max-num-seqs", type=int, default=2)
     return parser.parse_args()
 
-
+# 模型运行主逻辑
 def main():
-    args = parse_args()
+    args = parse_args() # 加载参数
     llm = OmniLLM(
         args.model,
         use_cpu_offload=not args.disable_cpu_offload,
         max_num_seqs=args.max_num_seqs,
-    )
-    sampling_params = llm.preset(args.preset)
-    if args.seed is not None:
+    ) # 加载vllm后端
+    sampling_params = llm.preset(args.preset) # 获取采样参数
+    if args.seed is not None: # 固定随机种子
         sampling_params.seed = args.seed
-    generation = llm.generate(args.image, args.prompt, args.negative_prompt, sampling_params)
-    output_path = Path(args.output)
-    llm.save(output=generation, output_path=output_path)
+    generation = llm.generate(args.image, args.prompt, args.negative_prompt, sampling_params) # 模型生成
+    output_path = Path(args.output) # 设置输出路径
+    llm.save(output=generation, output_path=output_path) # 最终输出
     print(output_path.resolve())

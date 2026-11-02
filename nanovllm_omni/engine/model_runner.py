@@ -54,18 +54,17 @@ class ModelRunner:
                 # 去掉已完成的请求，腾出空间
                 for finished_req_id in scheduler_output.finished_req_ids:
                     self.state_cache.pop(finished_req_id, None)
-
+                # 判断请求状态
                 sched_req_id, state, is_new_request = self._get_or_create_state(scheduler_output) # 
-
+                # 给新请求准备(新空间)
                 if is_new_request:
                     state = self.pipeline.prepare_encode(state)
                     self.state_cache[sched_req_id] = state
-
+                # 调用模型进行处理
                 if not state.denoise_completed:
-                    noise_pred = self.pipeline.denoise_step(state)
+                    noise_pred = self.pipeline.denoise_step(state) # 跑模型
                     self.pipeline.step_scheduler(state, noise_pred)
-
-                # 是否完成
+                # 根据完成情况返回结果状态
                 if state.denoise_completed:
                     result = self.pipeline.post_decode(state)
                     self.state_cache.pop(sched_req_id, None)

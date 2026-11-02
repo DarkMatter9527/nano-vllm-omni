@@ -17,6 +17,7 @@ class OmniEngine:
         self.runner = ModelRunner(config)
 
     def generate(self, requests: OmniRequest | list[OmniRequest]) -> list[OmniOutput]:
+        """ 整体就是一个事件循环 """
 
         if isinstance(requests, OmniRequest):
             requests = [requests] 
@@ -43,7 +44,7 @@ class OmniEngine:
             for finished_req_id in finished_req_ids:
                 self.scheduler.pop_request_state(finished_req_id)
 
-            # 记录请求结果并返回
+            # 记录请求结果
             if runner_output.result is not None:
                 outputs.append(runner_output.result)
 

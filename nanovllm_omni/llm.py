@@ -39,7 +39,7 @@ class OmniLLM:
         if negative_prompt is not None:
             sampling_params.negative_prompt = negative_prompt
 
-        request = OmniRequest(prompt=prompt, image=image, sampling_params=sampling_params) # 封装需求
+        request = OmniRequest(prompt=prompt, image=image, sampling_params=sampling_params) # 包装请求
 
         outputs = self.engine.generate(request) # 调用引擎生成
         
